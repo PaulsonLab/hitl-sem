@@ -1,0 +1,27 @@
+# Input images and cached embeddings: distributed via Zenodo, never committed
+data/**/*.png
+data/**/*.jpg
+data/**/*.jpeg
+data/**/*.tif
+data/**/*.tiff
+data/**/*.npz
+
+# Everything written at runtime
+outputs/**/*.npz
+outputs/**/*.json
+outputs/**/*.csv
+outputs/**/*.joblib
+outputs/**/*.png
+outputs/**/*.pdf
+
+# DINOv3: cloned/downloaded locally, not redistributed
+dinov3/*
+!dinov3/README.md
+dinov3_weights/*
+!dinov3_weights/README.md
+
+__pycache__/
+*.py[cod]
+.ipynb_checkpoints/
+.DS_Store
+.venv/
