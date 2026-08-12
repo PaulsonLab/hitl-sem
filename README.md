@@ -19,6 +19,9 @@ VRAM).
 ## Installation
 
 ```bash
+git clone https://github.com/PaulsonLab/hitl-sem.git
+cd hitl-sem
+
 conda create -n hitl-sem python=3.10
 conda activate hitl-sem
 
@@ -27,6 +30,9 @@ pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorc
 
 pip install -e .
 ```
+
+Every command in this README is run from the repository root unless stated
+otherwise, and the data folders below are relative to it.
 
 `pip install -e .` installs the dependencies and puts `hitl_sem` on the import
 path, so the `python -m hitl_sem.…` commands below work from any directory. It is
