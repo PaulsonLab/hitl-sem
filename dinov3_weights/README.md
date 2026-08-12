@@ -17,6 +17,17 @@ license-gated by Meta and are not redistributed here.
    dinov3_weights/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
    ```
 
-That exact filename is the default in `hitl_sem/features.py`. To use a different
-checkpoint, pass `weights_path=` (and a matching `model_name=`) to
-`Dinov3FeatureExtractor`.
+That exact filename is the default in `hitl_sem/features.py`.
+
+## Using a checkpoint somewhere else
+
+If you already have the weights, leave this folder empty and point the package at
+them:
+
+```bash
+export DINOV3_WEIGHTS=/path/to/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
+```
+
+The lookup order is the `weights_path=` argument, then `$DINOV3_WEIGHTS`, then
+this folder. To use a different backbone, pass a matching `model_name=` to
+`Dinov3FeatureExtractor` as well.

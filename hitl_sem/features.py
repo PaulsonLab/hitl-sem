@@ -4,6 +4,11 @@ The backbone is loaded from a local clone of the DINOv3 repository (see
 ``dinov3/README.md``) together with a downloaded checkpoint (see
 ``dinov3_weights/README.md``); neither is redistributed here.
 
+Both are located in this order: an explicit ``repo_dir=`` / ``weights_path=``
+argument, then the ``DINOV3_REPO`` / ``DINOV3_WEIGHTS`` environment variables,
+then ``dinov3/`` and ``dinov3_weights/`` beside this package. Set the environment
+variables when using this package away from a repository checkout.
+
 Run as a script to embed a folder of images:
 
     python -m hitl_sem.features --data-folder data/segmentation/case2/patches \
@@ -24,17 +29,46 @@ import torchvision.transforms.functional as TF
 from PIL import Image
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_REPO_DIR = REPO_ROOT / "dinov3"
-DEFAULT_WEIGHTS = REPO_ROOT / "dinov3_weights" / "dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth"
+DEFAULT_WEIGHTS_NAME = "dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth"
 
 IMAGE_EXTS = {'.png', '.jpg', '.jpeg', '.tif', '.tiff'}
+
+
+def resolve_repo_dir(repo_dir=None):
+    """Locate the DINOv3 clone: explicit argument, then $DINOV3_REPO, then ./dinov3."""
+    if repo_dir is not None:
+        return Path(repo_dir)
+    env = os.environ.get("DINOV3_REPO")
+    return Path(env) if env else REPO_ROOT / "dinov3"
+
+
+def resolve_weights(weights_path=None):
+    """Locate the checkpoint: explicit argument, then $DINOV3_WEIGHTS, then ./dinov3_weights."""
+    if weights_path is not None:
+        return Path(weights_path)
+    env = os.environ.get("DINOV3_WEIGHTS")
+    return Path(env) if env else REPO_ROOT / "dinov3_weights" / DEFAULT_WEIGHTS_NAME
 
 
 class Dinov3FeatureExtractor:
     """DINOv3 feature extractor for grayscale SEM images."""
 
-    def __init__(self, model_name="dinov3_vitl16", repo_dir=DEFAULT_REPO_DIR,
-                 weights_path=DEFAULT_WEIGHTS):
+    def __init__(self, model_name="dinov3_vitl16", repo_dir=None, weights_path=None):
+        repo_dir = resolve_repo_dir(repo_dir)
+        weights_path = resolve_weights(weights_path)
+
+        if not (repo_dir / "hubconf.py").exists():
+            raise FileNotFoundError(
+                f"No DINOv3 clone at {repo_dir} (expected {repo_dir / 'hubconf.py'}). "
+                "Clone https://github.com/facebookresearch/dinov3 there, or set "
+                "$DINOV3_REPO, or pass repo_dir=."
+            )
+        if not weights_path.exists():
+            raise FileNotFoundError(
+                f"No DINOv3 checkpoint at {weights_path}. Download it from the DINOv3 "
+                "repository, or set $DINOV3_WEIGHTS, or pass weights_path=."
+            )
+
         self.model_name = model_name
         self.device = "cuda" if torch.cuda.is_available() else "cpu"
         self.patch_size = 16

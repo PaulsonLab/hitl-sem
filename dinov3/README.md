@@ -25,5 +25,17 @@ torch.hub.load("dinov3", "dinov3_vitl16", source="local", weights=<checkpoint>)
 
 The checkpoint itself goes in `../dinov3_weights/` — see the README there.
 
+## Using a clone somewhere else
+
+If DINOv3 is already installed elsewhere, leave this folder empty and point the
+package at it instead:
+
+```bash
+export DINOV3_REPO=/path/to/dinov3
+```
+
+The lookup order is the `repo_dir=` argument, then `$DINOV3_REPO`, then this
+folder.
+
 DINOv3 is distributed under its own license; please read
 `dinov3/LICENSE.md` after cloning.

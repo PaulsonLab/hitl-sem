@@ -25,8 +25,19 @@ conda activate hitl-sem
 # Pick the PyTorch build that matches your CUDA version; this is what was tested
 pip install torch==2.5.1 torchvision==0.20.1 --index-url https://download.pytorch.org/whl/cu118
 
-pip install -r requirements.txt
+pip install -e .
 ```
+
+`pip install -e .` installs the dependencies and puts `hitl_sem` on the import
+path, so the `python -m hitl_sem.…` commands below work from any directory. It is
+an editable install by design: the case-study commands resolve their default
+paths relative to this checkout. `pip install -r requirements.txt` also works if
+you would rather not install the package and always run from the repository root.
+
+If you already have a working environment, `pip install -e . --no-deps` registers
+the package without touching anything you have installed. This matters because
+`opencv-python` declares a dependency on NumPy 2, so a plain install pulls NumPy 2
+in even where NumPy 1.24 works fine.
 
 The interactive dashboards need `ipympl`; run the notebooks in JupyterLab and
 keep the `%matplotlib widget` line at the top. A GPU is only needed for feature
@@ -166,6 +177,72 @@ resolution before predicting, which needs several GB of RAM per tile.
    and reproduces the numbers in the paper; point `--al-log` at
    `outputs/classification/active_learning_logs.csv` to score your own session.
    The result is a CSV with the ground truth and all three predictions per image.
+
+## Using the segmentation tools on your own images
+
+The segmentation stack is not specific to this paper or to SEM data. `SeqLoader`
+and `ActiveSegmentationDashboard` take every path as an argument and learn
+whatever classes you type into the UI, so any sequence of grayscale images can be
+segmented the same way: draw a few boxes, train, correct where the entropy map
+says the model is unsure, move on.
+
+Point the package at your DINOv3 install once, and it no longer needs this
+checkout:
+
+```bash
+export DINOV3_REPO=/path/to/dinov3            # the clone containing hubconf.py
+export DINOV3_WEIGHTS=/path/to/dinov3_vitl16_pretrain_lvd1689m-8aa4cbdd.pth
+```
+
+On Windows use `setx DINOV3_REPO "C:\path\to\dinov3"`, or set the variables in
+Python before the first extraction. Both are also settable per call, via
+`Dinov3FeatureExtractor(repo_dir=..., weights_path=...)`.
+
+Then, in a notebook with `%matplotlib widget`:
+
+```python
+from hitl_sem.segmentation import SeqLoader
+from hitl_sem.segmentation.dashboard import ActiveSegmentationDashboard
+
+loader = SeqLoader(
+    img_dir="my_project/images",        # the images to segment, in sequence
+    features_dir="my_project/features", # DINOv3 features, extracted on first use
+    labels_dir="my_project/predictions",# per-image predictions are written here
+    boxes_dir="my_project/boxes",       # annotated patches banked for later images
+)
+
+dashboard = ActiveSegmentationDashboard(
+    loader, save_dir="my_project/history", mode="patch", track_progress=True
+)
+```
+
+Things worth knowing:
+
+- Images must be `.png`, grayscale, 8- or 16-bit. Pass `img_ext=` to `SeqLoader`
+  if yours use a different extension, and note that images are visited in
+  alphabetical order — that order is the sequence the model learns along.
+- `mode="patch"` predicts one label per 16 × 16 patch and is fast. `mode="pixel"`
+  interpolates the features to full resolution for a smooth boundary, at a cost
+  of several GB of RAM per image.
+- Classes are created in the UI with **Add Class**; there is no fixed class list
+  and no retraining from scratch when you add one.
+- From the second image onward the boxes drawn so far are subsampled (`k=1000`
+  patches by default) and used to pre-segment the next image, so annotation
+  effort drops as you go.
+- Everything is written under the directories you pass; nothing is written back
+  into the package.
+
+To extract features up front rather than on first use:
+
+```bash
+python -m hitl_sem.features --data-folder my_project/images \
+                            --output-folder my_project/features
+```
+
+The classification stack is usable the same way — `HierarchicalInitializer`
+derives its label tree from your folder structure, and `SequentialActiveLearner`
+takes its directories as arguments — but its command-line defaults assume this
+checkout's layout, so pass the paths explicitly.
 
 ## What is in the repository
 

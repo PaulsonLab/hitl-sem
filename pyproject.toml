@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hitl-sem"
+dynamic = ["version"]
+description = "Human-in-the-loop segmentation and classification of SEM micrographs using frozen DINOv3 features"
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["segmentation", "active-learning", "DINOv3", "electron-microscopy", "human-in-the-loop"]
+
+# PyTorch is listed here, but install the build matching your CUDA version first;
+# pip leaves an existing install alone when it already satisfies the constraint.
+dependencies = [
+    "torch>=2.5.1",
+    "torchvision>=0.20.1",
+    "numpy>=1.24",
+    "scipy>=1.15",
+    "scikit-learn>=1.6",
+    "pandas>=2.2",
+    "joblib>=1.5",
+    "opencv-python>=4.12",
+    "pillow>=11.1",
+    "matplotlib>=3.8",
+    "ipywidgets>=8.0",
+    "ipympl>=0.9.3",
+]
+
+[project.optional-dependencies]
+notebooks = ["jupyterlab>=4.0"]
+
+[project.urls]
+Repository = "https://github.com/PaulsonLab/hitl-sem"
+
+[tool.setuptools]
+packages = ["hitl_sem", "hitl_sem.segmentation", "hitl_sem.classification"]
+
+[tool.setuptools.dynamic]
+version = {attr = "hitl_sem.__version__"}
