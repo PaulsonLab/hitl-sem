@@ -37,6 +37,7 @@ class ActiveSegmentationDashboard:
         self.class_names = []
         self.current_class_idx = 0
         self._dragging = False
+        self._preview_patch = None
 
         self._build_ui()
         self._load_current_image()
@@ -204,6 +205,10 @@ class ActiveSegmentationDashboard:
         if event.inaxes != self.ax_img: return
         name, color = self._current_class()
         if not name: return
+        # Clear a preview stranded by a drag whose mouse-release never arrived
+        if self._preview_patch:
+            self._preview_patch.remove()
+            self._preview_patch = None
         self._dragging = True
         self._x0, self._y0 = event.xdata, event.ydata
         self._preview_patch = Rectangle((self._x0, self._y0), 0, 0, fill=False, ec=color, ls='--')
