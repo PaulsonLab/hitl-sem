@@ -6,7 +6,6 @@ them, and its prediction is offered as a zero-shot starting point which the huma
 can accept or correct.
 """
 
-import re
 from pathlib import Path
 
 import cv2
@@ -91,7 +90,8 @@ class SeqLoader:
         else:
             # Normalize the banked training patches jointly with this image's
             # features so both live in the same L2 space
-            f_l, y_l = load_and_concat_npz(self.boxes_dir, self.index)
+            seen_ids = [p.stem for p in self.img_files[:self.index]]
+            f_l, y_l = load_and_concat_npz(self.boxes_dir, seen_ids)
             f_sample, y_sample = sample_data(f_l, y_l, k=self.k, seed=42)
             f_all = np.concatenate([features, f_sample], axis=0)
             F = normalize(f_all.astype(np.float32), norm='l2', axis=1)
@@ -140,38 +140,37 @@ class SeqLoader:
             print(f"Saved boxes to {self.out_1}")
 
 
-def load_and_concat_npz(folder_path: str, n: int) -> tuple:
-    """Concatenate the banked patches of every image whose index is below n.
+def load_and_concat_npz(folder_path: str, img_ids) -> tuple:
+    """Concatenate the banked patches of the given images, in the order given.
 
-    Gaps are tolerated: with n=6 and img_02 missing, 00, 01, 03, 04, 05 are used.
+    ``img_ids`` is the sequence of image stems already visited; each contributes
+    ``<stem>_boxes.npz`` if that file exists. Images the human left unannotated
+    bank no boxes, so gaps in the sequence are tolerated: given four images with
+    the second unannotated, the other three are used.
     """
     path = Path(folder_path)
+    img_ids = list(img_ids)
     all_X, all_y = [], []
-    loaded_indices = []
+    loaded_ids = []
 
-    files = list(path.glob("*.npz"))
-
-    for f in files:
-        match = re.search(r'img_(\d+)_', f.name)
-        if match:
-            idx = int(match.group(1))
-
-            if idx < n:
-                with np.load(f, allow_pickle=True) as data:
-                    all_X.append(data[data.files[0]])
-                    all_y.append(data[data.files[1]])
-                    loaded_indices.append(idx)
+    for img_id in img_ids:
+        f = path / f"{img_id}_boxes.npz"
+        if not f.exists():
+            continue
+        with np.load(f, allow_pickle=True) as data:
+            all_X.append(data[data.files[0]])
+            all_y.append(data[data.files[1]])
+            loaded_ids.append(img_id)
 
     if not all_X:
-        raise FileNotFoundError(f"No files with index < {n} found in {folder_path}")
+        raise FileNotFoundError(
+            f"No banked boxes found in {folder_path} for any of: {img_ids}"
+        )
 
-    combined = sorted(zip(loaded_indices, all_X, all_y))
-    _, all_X_sorted, all_y_sorted = zip(*combined)
+    X_final = np.concatenate(all_X, axis=0)
+    y_final = np.concatenate(all_y, axis=0)
 
-    X_final = np.concatenate(all_X_sorted, axis=0)
-    y_final = np.concatenate(all_y_sorted, axis=0)
-
-    print(f"Loaded indices: {sorted(loaded_indices)}")
+    print(f"Loaded boxes from: {loaded_ids}")
     print(f"Final shape: {X_final.shape}, {y_final.shape}")
 
     return X_final, y_final
