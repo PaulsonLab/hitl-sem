@@ -49,7 +49,8 @@ in even where NumPy 1.24 works fine.
 
 The interactive dashboards need `ipympl`; run the notebooks in JupyterLab and
 keep the `%matplotlib widget` line at the top. A GPU is only needed for feature
-extraction — every classifier trains on CPU.
+extraction — every classifier trains on CPU — but the data record ships images
+only, so that step always runs at least once.
 
 Tested versions: Python 3.10.19, PyTorch 2.5.1, torchvision 0.20.1,
 scikit-learn 1.6.1, NumPy 1.24.4, SciPy 1.15.1, pandas 2.2.3, OpenCV 4.12.0,
@@ -87,28 +88,16 @@ Unpack each archive into the matching placeholder folder:
 | `segmentation_case2_images.zip` | 16 tiles, `img_00.png` … `img_15.png`, 510 px tall | `data/segmentation/case2/patches/` |
 | `classification_images.zip` | 58 micrographs in `Dendritic/`, `DualPhase/`, `SinglePhase/` | `data/classification/images_all/` |
 
-The same record also carries the precomputed DINOv3 embeddings. They are optional
-— every extraction step below regenerates them — but unpacking them lets you run
-the whole pipeline on CPU without installing the DINOv3 backbone at all:
-
-| Archive | Contents | Unpack into |
-|---|---|---|
-| `embeddings_classification_init_01.zip` … `_05.zip` | 2.0 GB — `embeddings_init/<class>/` | `data/classification/` |
-| `embeddings_classification_test_01.zip` … `_08.zip` | 3.3 GB — `embeddings_test/` | `data/classification/` |
-| `embeddings_segmentation.zip` | 173 MB — `case1/features/` and `case2/features/` | `data/segmentation/` |
-
-The thirteen classification archives are split only for transfer reliability
-and share one directory tree: unpack all of them into `data/classification/`
-to reconstruct the full `embeddings_init/` and `embeddings_test/` folders.
-
 Filenames matter: the classification ground truth CSV and the segmentation
 annotations are keyed by image name, and the sequence order in case study 2 is
 the alphabetical order of the tiles.
 
-Feature files live next to the images as `<image stem>_<image height>.npz` and
-take roughly 5 GB across all three case studies. Every stage skips extraction for
-any image that already has one, so a populated `features/` or `embeddings_*/`
-folder simply makes that step a no-op.
+The record carries the images only; the pipeline derives its own embeddings from
+them. Feature files are written next to the images as
+`<image stem>_<image height>.npz` and take roughly 5 GB across all three case
+studies. Every stage skips extraction for any image that already has one, so a
+populated `features/` or `embeddings_*/` folder simply makes that step a no-op —
+extraction runs once and later stages reuse the cache.
 
 ## Running the case studies
 
@@ -151,8 +140,8 @@ resolution before predicting, which needs several GB of RAM per tile.
 
    Drop `--from-csv` to draw a fresh random split (seed 42, 40 % init) instead.
 
-2. **Extract embeddings** for both halves — skip this if you unpacked the
-   `embeddings_classification_*` archives.
+2. **Extract embeddings** for both halves. This is the slow step and the only
+   one that needs a GPU; it runs once and is cached.
 
    ```bash
    python -m hitl_sem.features --recursive \
@@ -301,9 +290,9 @@ Please cite both the dataset and the paper.
 
 Dataset:
 
-> Tan, T., Dutta, A., Kube, S., & Paulson, J. A. (2026). *SEM micrographs and
-> DINOv3 embeddings for human-in-the-loop segmentation and classification*
-> [Data set]. Zenodo. <https://doi.org/10.5281/zenodo.22243033>
+> Tan, T., Dutta, A., Kube, S., & Paulson, J. A. (2026). *SEM micrographs for
+> human-in-the-loop segmentation and classification* [Data set]. Zenodo.
+> <https://doi.org/10.5281/zenodo.22243033>
 
 Paper:
 
