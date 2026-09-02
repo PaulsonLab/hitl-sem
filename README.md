@@ -93,8 +93,13 @@ the whole pipeline on CPU without installing the DINOv3 backbone at all:
 
 | Archive | Contents | Unpack into |
 |---|---|---|
-| `embeddings_classification.zip` | 5.0 GB — `embeddings_init/<class>/` and `embeddings_test/` | `data/classification/` |
+| `embeddings_classification_init_01.zip` … `_05.zip` | 2.0 GB — `embeddings_init/<class>/` | `data/classification/` |
+| `embeddings_classification_test_01.zip` … `_08.zip` | 3.3 GB — `embeddings_test/` | `data/classification/` |
 | `embeddings_segmentation.zip` | 173 MB — `case1/features/` and `case2/features/` | `data/segmentation/` |
+
+The thirteen classification archives are split only for transfer reliability
+and share one directory tree: unpack all of them into `data/classification/`
+to reconstruct the full `embeddings_init/` and `embeddings_test/` folders.
 
 Filenames matter: the classification ground truth CSV and the segmentation
 annotations are keyed by image name, and the sequence order in case study 2 is
@@ -146,8 +151,8 @@ resolution before predicting, which needs several GB of RAM per tile.
 
    Drop `--from-csv` to draw a fresh random split (seed 42, 40 % init) instead.
 
-2. **Extract embeddings** for both halves — skip this if you unpacked
-   `embeddings_classification.zip`.
+2. **Extract embeddings** for both halves — skip this if you unpacked the
+   `embeddings_classification_*` archives.
 
    ```bash
    python -m hitl_sem.features --recursive \
