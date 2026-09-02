@@ -305,6 +305,17 @@ Paper:
 > Tan, T., Dutta, A., Kube, S., & Paulson, J. A. *Human-in-the-Loop Microscopy
 > Image Analysis using Vision Foundation Models*. [journal, volume, year].
 
+## Funding
+
+The information, data, or work presented herein was funded in part by the
+Advanced Research Projects Agency-Energy (ARPA-E), U.S. Department of Energy,
+under Award Number DE-AR0001933. The views and opinions of authors expressed
+herein do not necessarily state or reflect those of the United States Government
+or any agency thereof. Another portion of support for this research was provided
+by the University of Wisconsin - Madison Office of the Vice Chancellor for
+Research with funding from the Wisconsin Alumni Research Foundation, through the
+Igniting Interdisciplinary Innovation Program.
+
 ## License
 
 The code in this repository is released under the MIT License (see `LICENSE`).
