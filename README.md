@@ -1,5 +1,7 @@
 # Human-in-the-loop segmentation and classification of SEM micrographs
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22243033.svg)](https://doi.org/10.5281/zenodo.22243033)
+
 Code for the three case studies in the paper. A frozen DINOv3 ViT-L/16 backbone
 supplies patch embeddings; lightweight scikit-learn models are trained on top of
 them from a handful of human annotations, and the human is asked for input only
@@ -75,8 +77,9 @@ See `dinov3/README.md` and `dinov3_weights/README.md` for details.
 
 ## Data
 
-Images are distributed on Zenodo: **[DOI to be added]**. Unpack each archive into
-the matching placeholder folder:
+Images are distributed on Zenodo:
+**[10.5281/zenodo.22243033](https://doi.org/10.5281/zenodo.22243033)**.
+Unpack each archive into the matching placeholder folder:
 
 | Archive | Contents | Unpack into |
 |---|---|---|
@@ -286,3 +289,24 @@ checkout's layout, so pass the paths explicitly.
 | `annotations/` | The human bounding boxes from both segmentation sessions, as JSON. |
 | `classification_ground_truth_mapping.csv` | The published init/test split and per-image labels. |
 | `data/`, `outputs/` | Empty placeholders; see the tables above. |
+
+## Citation
+
+Please cite both the dataset and the paper.
+
+Dataset:
+
+> Tan, T., Dutta, A., Kube, S., & Paulson, J. A. (2026). *SEM micrographs and
+> DINOv3 embeddings for human-in-the-loop segmentation and classification*
+> [Data set]. Zenodo. <https://doi.org/10.5281/zenodo.22243033>
+
+Paper:
+
+> Tan, T., Dutta, A., Kube, S., & Paulson, J. A. *Human-in-the-Loop Microscopy
+> Image Analysis using Vision Foundation Models*. [journal, volume, year].
+
+## License
+
+The code in this repository is released under the MIT License (see `LICENSE`).
+The data record above is licensed CC BY 4.0. The DINOv3 backbone and its weights
+are distributed by Meta under their own license and are not redistributed here.
