@@ -75,7 +75,6 @@ def create_dataset_splits(src_dir, init_dir, test_dir, csv_path, init_ratio=0.4,
             records.append({
                 "filename": img_name, "split": "init",
                 "level_1": level_1, "level_2": level_2, "level_3": level_3,
-                "current_path": str(dest_img_path)
             })
 
         # Test images go into one flat folder; the CSV is their only label
@@ -90,7 +89,6 @@ def create_dataset_splits(src_dir, init_dir, test_dir, csv_path, init_ratio=0.4,
             records.append({
                 "filename": img_name, "split": "test",
                 "level_1": level_1, "level_2": level_2, "level_3": level_3,
-                "current_path": str(dest_img_path)
             })
 
     df = pd.DataFrame(records)
